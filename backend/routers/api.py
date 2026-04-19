@@ -292,7 +292,7 @@ def checkout_order(checkout: CartCheckout, db: Session = Depends(get_db)):
     db.commit()
     
     # Create check
-    from datetime import date, time
+    from datetime import date, time, datetime
     check = Check(
         order_id=order.id,
         total_price=total_price,
