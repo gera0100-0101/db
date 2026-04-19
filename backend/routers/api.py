@@ -17,7 +17,7 @@ from schemas.schemas import (
     WorkerCreate, WorkerUpdate, WorkerResponse,
     PostCreate, PostResponse,
     OrderResponse, OrderUpdate,
-    CartCheckout, Order as OrderSchema
+    CartCheckout
 )
 
 router = APIRouter()
