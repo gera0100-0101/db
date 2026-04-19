@@ -1,1 +1,1 @@
-Nothing needs to be added to the .gitignore file based on the provided changes. The only modified file is a source code file (AdminPanel.jsx), which should not be ignored.
+Nothing should be ignored based on the provided file changes, as only a Python source file (`backend/routers/api.py`) was modified and no build artifacts, dependencies, or temporary files were included in the changes.
