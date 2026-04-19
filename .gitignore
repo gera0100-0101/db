@@ -1,1 +1,14 @@
-Nothing needs to be added to .gitignore since only a Python source file (`backend/routers/api.py`) was modified and no build artifacts, dependencies, or temporary files were included in the changes.
+```
+# Dependencies
+__pycache__/
+
+# Compiled Python files
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+.env.local
+.env.*
+```
