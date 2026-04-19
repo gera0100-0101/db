@@ -211,6 +211,22 @@ class OrderItemResponse(OrderItemBase):
     class Config:
         from_attributes = True
 
+# Check schemas (must be before OrderResponse due to forward reference)
+class CheckBase(BaseModel):
+    order_id: int
+    total_price: float
+    created_date: Optional[date] = None
+    created_time: Optional[time] = None
+
+class CheckCreate(CheckBase):
+    pass
+
+class CheckResponse(CheckBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
+
 # Order schemas
 class OrderBase(BaseModel):
     customer_id: int
@@ -235,23 +251,7 @@ class OrderResponse(OrderBase):
     courier: Optional[WorkerResponse] = None
     payment: Optional[PaymentResponse] = None
     order_items: List[OrderItemResponse] = []
-    check: Optional['CheckResponse'] = None
-    
-    class Config:
-        from_attributes = True
-
-# Check schemas
-class CheckBase(BaseModel):
-    order_id: int
-    total_price: float
-    created_date: Optional[date] = None
-    created_time: Optional[time] = None
-
-class CheckCreate(CheckBase):
-    pass
-
-class CheckResponse(CheckBase):
-    id: int
+    check: Optional[CheckResponse] = None
     
     class Config:
         from_attributes = True
