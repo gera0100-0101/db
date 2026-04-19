@@ -61,6 +61,7 @@ class Product(Base):
     category = relationship('Category', back_populates='products')
     manufacturer = relationship('Manufacturer', back_populates='products')
     image_groups = relationship('ProductImageGroup', back_populates='product', cascade='all, delete-orphan')
+    order_items = relationship('OrderItem', back_populates='product')
 
 class ProductImageGroup(Base):
     __tablename__ = 'product_image_groups'

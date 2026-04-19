@@ -28,6 +28,38 @@ const AdminPanel = () => {
   });
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // Category modal
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryForm, setCategoryForm] = useState({ name: '', description: '' });
+
+  // Manufacturer modal
+  const [showManufacturerModal, setShowManufacturerModal] = useState(false);
+  const [editingManufacturer, setEditingManufacturer] = useState(null);
+  const [manufacturerForm, setManufacturerForm] = useState({
+    name: '', contact_person: '', phone_number: '', email: '', location: ''
+  });
+
+  // Shop modal
+  const [showShopModal, setShowShopModal] = useState(false);
+  const [editingShop, setEditingShop] = useState(null);
+  const [shopForm, setShopForm] = useState({ company_id: '', address: '' });
+
+  // Company modal
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const [companyForm, setCompanyForm] = useState({ company_name: '' });
+
+  // Worker modal
+  const [showWorkerModal, setShowWorkerModal] = useState(false);
+  const [editingWorker, setEditingWorker] = useState(null);
+  const [workerForm, setWorkerForm] = useState({
+    full_name: '', email: '', phone_number: '', post_id: ''
+  });
+
+  // Post modal
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [postForm, setPostForm] = useState({ name: '', salary: '' });
+
   useEffect(() => {
     loadData();
   }, [activeTab]);
