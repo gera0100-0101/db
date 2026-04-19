@@ -150,6 +150,88 @@ const AdminPanel = () => {
     }
   };
 
+  const handleCategorySubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await createCategory(categoryForm);
+      setShowCategoryModal(false);
+      setCategoryForm({ name: '', description: '' });
+      loadData();
+    } catch (error) {
+      alert('Error saving category: ' + error.message);
+    }
+  };
+
+  const handleManufacturerSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingManufacturer) {
+        await updateManufacturer(editingManufacturer.id, manufacturerForm);
+      } else {
+        await createManufacturer(manufacturerForm);
+      }
+      setShowManufacturerModal(false);
+      setEditingManufacturer(null);
+      loadData();
+    } catch (error) {
+      alert('Error saving manufacturer: ' + error.message);
+    }
+  };
+
+  const handleShopSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const shopData = { ...shopForm, company_id: parseInt(shopForm.company_id) };
+      await createShop(shopData);
+      setShowShopModal(false);
+      setShopForm({ company_id: '', address: '' });
+      loadData();
+    } catch (error) {
+      alert('Error saving shop: ' + error.message);
+    }
+  };
+
+  const handleCompanySubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await createCompany(companyForm);
+      setShowCompanyModal(false);
+      setCompanyForm({ company_name: '' });
+      loadData();
+    } catch (error) {
+      alert('Error saving company: ' + error.message);
+    }
+  };
+
+  const handleWorkerSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const workerData = {
+        ...workerForm,
+        post_id: workerForm.post_id ? parseInt(workerForm.post_id) : null
+      };
+      await createWorker(workerData);
+      setShowWorkerModal(false);
+      setWorkerForm({ full_name: '', email: '', phone_number: '', post_id: '' });
+      loadData();
+    } catch (error) {
+      alert('Error saving worker: ' + error.message);
+    }
+  };
+
+  const handlePostSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const postData = { ...postForm, salary: parseFloat(postForm.salary) };
+      await createPost(postData);
+      setShowPostModal(false);
+      setPostForm({ name: '', salary: '' });
+      loadData();
+    } catch (error) {
+      alert('Error saving post: ' + error.message);
+    }
+  };
+
   const renderProducts = () => (
     <div className="admin-section">
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
@@ -327,8 +409,13 @@ const AdminPanel = () => {
           {activeTab === 'orders' && renderOrders()}
           {activeTab === 'categories' && (
             <div className="admin-section">
-              <h3 className="admin-section-title">Categories</h3>
-              <p>Use API or extend the panel to add categories.</p>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                <h3 className="admin-section-title" style={{margin: 0}}>Categories</h3>
+                <button className="btn btn-primary" onClick={() => {
+                  setCategoryForm({ name: '', description: '' });
+                  setShowCategoryModal(true);
+                }}>Add Category</button>
+              </div>
               <table className="data-table">
                 <thead><tr><th>ID</th><th>Name</th><th>Description</th></tr></thead>
                 <tbody>
@@ -341,12 +428,49 @@ const AdminPanel = () => {
           )}
           {activeTab === 'manufacturers' && (
             <div className="admin-section">
-              <h3 className="admin-section-title">Manufacturers</h3>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                <h3 className="admin-section-title" style={{margin: 0}}>Manufacturers</h3>
+                <button className="btn btn-primary" onClick={() => {
+                  setEditingManufacturer(null);
+                  setManufacturerForm({ name: '', contact_person: '', phone_number: '', email: '', location: '' });
+                  setShowManufacturerModal(true);
+                }}>Add Manufacturer</button>
+              </div>
               <table className="data-table">
-                <thead><tr><th>ID</th><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th></tr></thead>
+                <thead><tr><th>ID</th><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Location</th></tr></thead>
                 <tbody>
                   {manufacturers.map(m => (
-                    <tr key={m.id}><td>{m.id}</td><td>{m.name}</td><td>{m.contact_person || '-'}</td><td>{m.phone_number || '-'}</td><td>{m.email || '-'}</td></tr>
+                    <tr key={m.id}>
+                      <td>{m.id}</td>
+                      <td>{m.name}</td>
+                      <td>{m.contact_person || '-'}</td>
+                      <td>{m.phone_number || '-'}</td>
+                      <td>{m.email || '-'}</td>
+                      <td>{m.location || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {activeTab === 'shops' && (
+            <div className="admin-section">
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                <h3 className="admin-section-title" style={{margin: 0}}>Shops</h3>
+                <button className="btn btn-primary" onClick={() => {
+                  setShopForm({ company_id: companies[0]?.id || '', address: '' });
+                  setShowShopModal(true);
+                }}>Add Shop</button>
+              </div>
+              <table className="data-table">
+                <thead><tr><th>ID</th><th>Company</th><th>Address</th></tr></thead>
+                <tbody>
+                  {shops.map(shop => (
+                    <tr key={shop.id}>
+                      <td>{shop.id}</td>
+                      <td>{shop.company?.company_name || 'N/A'}</td>
+                      <td>{shop.address}</td>
+                    </tr>
                   ))}
                 </tbody>
               </table>
@@ -354,7 +478,13 @@ const AdminPanel = () => {
           )}
           {activeTab === 'workers' && (
             <div className="admin-section">
-              <h3 className="admin-section-title">Workers</h3>
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                <h3 className="admin-section-title" style={{margin: 0}}>Workers</h3>
+                <button className="btn btn-primary" onClick={() => {
+                  setWorkerForm({ full_name: '', email: '', phone_number: '', post_id: '' });
+                  setShowWorkerModal(true);
+                }}>Add Worker</button>
+              </div>
               <table className="data-table">
                 <thead><tr><th>ID</th><th>Name</th><th>Position</th><th>Phone</th><th>Email</th></tr></thead>
                 <tbody>
@@ -476,6 +606,251 @@ const AdminPanel = () => {
               <div className="modal-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowProductModal(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary">{editingProduct ? 'Update' : 'Create'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showCategoryModal && (
+        <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Add Category</h3>
+            <form onSubmit={handleCategorySubmit}>
+              <div className="form-group">
+                <label className="form-label">Name *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={categoryForm.name}
+                  onChange={(e) => setCategoryForm({...categoryForm, name: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Description</label>
+                <textarea
+                  className="form-input"
+                  rows="3"
+                  value={categoryForm.description}
+                  onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})}
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowCategoryModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Create</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showManufacturerModal && (
+        <div className="modal-overlay" onClick={() => setShowManufacturerModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">{editingManufacturer ? 'Edit Manufacturer' : 'Add Manufacturer'}</h3>
+            <form onSubmit={handleManufacturerSubmit}>
+              <div className="form-group">
+                <label className="form-label">Name *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={manufacturerForm.name}
+                  onChange={(e) => setManufacturerForm({...manufacturerForm, name: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Contact Person</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={manufacturerForm.contact_person}
+                  onChange={(e) => setManufacturerForm({...manufacturerForm, contact_person: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Phone Number</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={manufacturerForm.phone_number}
+                  onChange={(e) => setManufacturerForm({...manufacturerForm, phone_number: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input
+                  type="email"
+                  className="form-input"
+                  value={manufacturerForm.email}
+                  onChange={(e) => setManufacturerForm({...manufacturerForm, email: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Location</label>
+                <textarea
+                  className="form-input"
+                  rows="2"
+                  value={manufacturerForm.location}
+                  onChange={(e) => setManufacturerForm({...manufacturerForm, location: e.target.value})}
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowManufacturerModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">{editingManufacturer ? 'Update' : 'Create'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showShopModal && (
+        <div className="modal-overlay" onClick={() => setShowShopModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Add Shop</h3>
+            <form onSubmit={handleShopSubmit}>
+              <div className="form-group">
+                <label className="form-label">Company *</label>
+                <select
+                  className="form-input"
+                  value={shopForm.company_id}
+                  onChange={(e) => setShopForm({...shopForm, company_id: e.target.value})}
+                  required
+                >
+                  <option value="">Select Company</option>
+                  {companies.map(company => (
+                    <option key={company.id} value={company.id}>{company.company_name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Address *</label>
+                <textarea
+                  className="form-input"
+                  rows="3"
+                  value={shopForm.address}
+                  onChange={(e) => setShopForm({...shopForm, address: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowShopModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Create</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showCompanyModal && (
+        <div className="modal-overlay" onClick={() => setShowCompanyModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Add Company</h3>
+            <form onSubmit={handleCompanySubmit}>
+              <div className="form-group">
+                <label className="form-label">Company Name *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={companyForm.company_name}
+                  onChange={(e) => setCompanyForm({...companyForm, company_name: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowCompanyModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Create</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showWorkerModal && (
+        <div className="modal-overlay" onClick={() => setShowWorkerModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Add Worker</h3>
+            <form onSubmit={handleWorkerSubmit}>
+              <div className="form-group">
+                <label className="form-label">Full Name *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={workerForm.full_name}
+                  onChange={(e) => setWorkerForm({...workerForm, full_name: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Email</label>
+                <input
+                  type="email"
+                  className="form-input"
+                  value={workerForm.email}
+                  onChange={(e) => setWorkerForm({...workerForm, email: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Phone Number</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={workerForm.phone_number}
+                  onChange={(e) => setWorkerForm({...workerForm, phone_number: e.target.value})}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Position</label>
+                <select
+                  className="form-input"
+                  value={workerForm.post_id}
+                  onChange={(e) => setWorkerForm({...workerForm, post_id: e.target.value})}
+                >
+                  <option value="">Select Position</option>
+                  {posts.map(post => (
+                    <option key={post.id} value={post.id}>{post.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowWorkerModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Create</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showPostModal && (
+        <div className="modal-overlay" onClick={() => setShowPostModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Add Post</h3>
+            <form onSubmit={handlePostSubmit}>
+              <div className="form-group">
+                <label className="form-label">Post Name *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={postForm.name}
+                  onChange={(e) => setPostForm({...postForm, name: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Salary *</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input"
+                  value={postForm.salary}
+                  onChange={(e) => setPostForm({...postForm, salary: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowPostModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Create</button>
               </div>
             </form>
           </div>
