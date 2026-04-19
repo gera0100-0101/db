@@ -1,14 +1,3 @@
-```
-# Dependencies
-__pycache__/
+backend/schemas/schemas.py is a source code file, and there are no build artifacts, dependencies, or temporary files in the changes. According to rule #6, when the change list contains only source or config files with no build artifacts, dependencies, or temp files, the output should be empty.
 
-# Compiled Python files
-*.pyc
-*.pyo
-*.pyd
-
-# Environment variables
-.env
-.env.local
-.env.*
-```
+(empty)
