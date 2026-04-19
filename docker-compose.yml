@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: retail_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: retail_store
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: retail_backend
+    command: >
+      sh -c "cd /app && uvicorn main:app --host 0.0.0.0 --port 8000"
+    volumes:
+      - ./backend:/app
+      - backend_uploads:/app/uploads
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/retail_store
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: retail_frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  backend_uploads:
