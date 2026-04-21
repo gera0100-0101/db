@@ -16,7 +16,7 @@ node_modules/
 # Environment
 .env
 .env.local
-*.env.*
+.env.*
 
 # Editors
 .vscode/
@@ -27,17 +27,17 @@ node_modules/
 coverage/
 htmlcov/
 
-# Python cache
-.mypy_cache/
-.pytest_cache/
+# Python specific
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg-info/
+.eggs/
 
 # Build directories
 dist/
 build/
 target/
-.gradle/
-
-# System files
-.DS_Store
-Thumbs.db
 ```
