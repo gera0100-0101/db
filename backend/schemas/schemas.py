@@ -23,6 +23,10 @@ class ShopBase(BaseModel):
 class ShopCreate(ShopBase):
     pass
 
+class ShopUpdate(BaseModel):
+    company_id: Optional[int] = None
+    address: Optional[str] = None
+
 class ShopResponse(ShopBase):
     id: int
     company: Optional[CompanyResponse] = None
@@ -37,6 +41,10 @@ class CategoryBase(BaseModel):
 
 class CategoryCreate(CategoryBase):
     pass
+
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
 
 class CategoryResponse(CategoryBase):
     id: int

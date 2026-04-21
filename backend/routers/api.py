@@ -3,6 +3,10 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import shutil
 import os
+from datetime import datetime, timedelta
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from pydantic import BaseModel
 from database import get_db
 from models import (
     Company, Shop, Category, Manufacturer, Product, ProductImageGroup, Image,
@@ -10,8 +14,8 @@ from models import (
 )
 from schemas.schemas import (
     CompanyCreate, CompanyResponse,
-    ShopCreate, ShopResponse,
-    CategoryCreate, CategoryResponse,
+    ShopCreate, ShopUpdate, ShopResponse,
+    CategoryCreate, CategoryUpdate, CategoryResponse,
     ManufacturerCreate, ManufacturerUpdate, ManufacturerResponse,
     ProductCreate, ProductUpdate, ProductResponse,
     WorkerCreate, WorkerUpdate, WorkerResponse,
@@ -22,8 +26,69 @@ from schemas.schemas import (
 
 router = APIRouter()
 
+# Security settings
+SECRET_KEY = "your-secret-key-change-in-production"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Hardcoded admin credentials
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD_HASH = pwd_context.hash("12345")
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def authenticate_user(username: str, password: str):
+    if username != ADMIN_USERNAME:
+        return False
+    if not verify_password(password, ADMIN_PASSWORD_HASH):
+        return False
+    return {"username": username}
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(token: str = Form(None)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+        return username
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# Auth endpoints
+@router.post("/auth/login", response_model=Token)
+def login(login_request: LoginRequest):
+    user = authenticate_user(login_request.username, login_request.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user["username"]}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 # Company endpoints
 @router.post("/companies/", response_model=CompanyResponse)
@@ -52,6 +117,29 @@ def create_shop(shop: ShopCreate, db: Session = Depends(get_db)):
 def get_shops(db: Session = Depends(get_db)):
     return db.query(Shop).all()
 
+@router.put("/shops/{shop_id}", response_model=ShopResponse)
+def update_shop(shop_id: int, shop: ShopUpdate, db: Session = Depends(get_db)):
+    db_shop = db.query(Shop).filter(Shop.id == shop_id).first()
+    if not db_shop:
+        raise HTTPException(status_code=404, detail="Shop not found")
+    
+    update_data = shop.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_shop, field, value)
+    
+    db.commit()
+    db.refresh(db_shop)
+    return db_shop
+
+@router.delete("/shops/{shop_id}")
+def delete_shop(shop_id: int, db: Session = Depends(get_db)):
+    db_shop = db.query(Shop).filter(Shop.id == shop_id).first()
+    if not db_shop:
+        raise HTTPException(status_code=404, detail="Shop not found")
+    db.delete(db_shop)
+    db.commit()
+    return {"message": "Shop deleted"}
+
 # Category endpoints
 @router.post("/categories/", response_model=CategoryResponse)
 def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
@@ -64,6 +152,29 @@ def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
 @router.get("/categories/", response_model=List[CategoryResponse])
 def get_categories(db: Session = Depends(get_db)):
     return db.query(Category).all()
+
+@router.put("/categories/{category_id}", response_model=CategoryResponse)
+def update_category(category_id: int, category: CategoryUpdate, db: Session = Depends(get_db)):
+    db_category = db.query(Category).filter(Category.id == category_id).first()
+    if not db_category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    update_data = category.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_category, field, value)
+    
+    db.commit()
+    db.refresh(db_category)
+    return db_category
+
+@router.delete("/categories/{category_id}")
+def delete_category(category_id: int, db: Session = Depends(get_db)):
+    db_category = db.query(Category).filter(Category.id == category_id).first()
+    if not db_category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    db.delete(db_category)
+    db.commit()
+    return {"message": "Category deleted"}
 
 # Manufacturer endpoints
 @router.post("/manufacturers/", response_model=ManufacturerResponse)
@@ -91,6 +202,15 @@ def update_manufacturer(manufacturer_id: int, manufacturer: ManufacturerUpdate, 
     db.commit()
     db.refresh(db_manufacturer)
     return db_manufacturer
+
+@router.delete("/manufacturers/{manufacturer_id}")
+def delete_manufacturer(manufacturer_id: int, db: Session = Depends(get_db)):
+    db_manufacturer = db.query(Manufacturer).filter(Manufacturer.id == manufacturer_id).first()
+    if not db_manufacturer:
+        raise HTTPException(status_code=404, detail="Manufacturer not found")
+    db.delete(db_manufacturer)
+    db.commit()
+    return {"message": "Manufacturer deleted"}
 
 # Product endpoints with image upload
 @router.post("/products/", response_model=ProductResponse)
@@ -235,6 +355,15 @@ def update_worker(worker_id: int, worker: WorkerUpdate, db: Session = Depends(ge
     db.refresh(db_worker)
     return db_worker
 
+@router.delete("/workers/{worker_id}")
+def delete_worker(worker_id: int, db: Session = Depends(get_db)):
+    db_worker = db.query(Worker).filter(Worker.id == worker_id).first()
+    if not db_worker:
+        raise HTTPException(status_code=404, detail="Worker not found")
+    db.delete(db_worker)
+    db.commit()
+    return {"message": "Worker deleted"}
+
 # Order endpoints
 @router.post("/orders/checkout/", response_model=OrderResponse)
 def checkout_order(checkout: CartCheckout, db: Session = Depends(get_db)):
@@ -292,7 +421,7 @@ def checkout_order(checkout: CartCheckout, db: Session = Depends(get_db)):
     db.commit()
     
     # Create check
-    from datetime import date, time
+    from datetime import date, time, datetime
     check = Check(
         order_id=order.id,
         total_price=total_price,
@@ -332,6 +461,15 @@ def update_order(order_id: int, order_update: OrderUpdate, db: Session = Depends
     db.commit()
     db.refresh(db_order)
     return db_order
+
+@router.delete("/orders/{order_id}")
+def delete_order(order_id: int, db: Session = Depends(get_db)):
+    db_order = db.query(Order).filter(Order.id == order_id).first()
+    if not db_order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    db.delete(db_order)
+    db.commit()
+    return {"message": "Order deleted"}
 
 @router.get("/admin/orders/", response_model=List[OrderResponse])
 def get_all_orders_with_details(db: Session = Depends(get_db)):
