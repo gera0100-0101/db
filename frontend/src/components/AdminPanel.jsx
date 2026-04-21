@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
+  login, setAuthToken,
   getProducts, getCategories, getManufacturers, getShops, getCompanies,
   createProduct, updateProduct, deleteProduct, uploadProductImage, deleteProductImage,
   createCategory, updateCategory, deleteCategory,
@@ -11,6 +13,69 @@ import {
 } from '../api';
 
 const AdminPanel = () => {
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [loginError, setLoginError] = useState('');
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await login(loginForm.username, loginForm.password);
+      localStorage.setItem('adminToken', response.access_token);
+      setAuthToken(response.access_token);
+      setIsAuthenticated(true);
+      setLoginError('');
+    } catch (error) {
+      setLoginError('Неверный логин или пароль');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    setAuthToken(null);
+    setIsAuthenticated(false);
+    navigate('/');
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="login-container" style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
+        <h2>Вход для администраторов</h2>
+        <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: '15px' }}>
+            <label>Логин:</label>
+            <input
+              type="text"
+              value={loginForm.username}
+              onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+              required
+            />
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label>Пароль:</label>
+            <input
+              type="password"
+              value={loginForm.password}
+              onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+              required
+            />
+          </div>
+          {loginError && <p style={{ color: 'red' }}>{loginError}</p>}
+          <button type="submit" className="btn-primary">Войти</button>
+        </form>
+      </div>
+    );
+  }
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -443,7 +508,12 @@ const AdminPanel = () => {
 
   return (
     <div className="container">
-      <h1>Admin Panel</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>Admin Panel</h1>
+        <button onClick={handleLogout} className="btn-secondary" style={{ marginLeft: 'auto' }}>
+          Выйти
+        </button>
+      </div>
       
       <div className="filters" style={{marginTop: '20px'}}>
         <button 

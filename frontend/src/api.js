@@ -9,6 +9,31 @@ const api = axios.create({
   },
 });
 
+// Auth
+export const login = async (username, password) => {
+  const formData = new FormData();
+  formData.append('username', username);
+  formData.append('password', password);
+  const response = await api.post('/auth/login', formData, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  });
+  return response.data;
+};
+
+export const setAuthToken = (token) => {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+  }
+};
+
+// Load token from localStorage on init
+const savedToken = localStorage.getItem('adminToken');
+if (savedToken) {
+  setAuthToken(savedToken);
+}
+
 // Products
 export const getProducts = async (shopId = null, categoryId = null) => {
   const params = {};
