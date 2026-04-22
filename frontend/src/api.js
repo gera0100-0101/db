@@ -11,11 +11,9 @@ const api = axios.create({
 
 // Auth
 export const login = async (username, password) => {
-  const formData = new FormData();
-  formData.append('username', username);
-  formData.append('password', password);
-  const response = await api.post('/auth/login', formData, {
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  const response = await api.post('/auth/login', {
+    username,
+    password
   });
   return response.data;
 };
