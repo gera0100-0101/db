@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
+  login, setAuthToken,
   getProducts, getCategories, getManufacturers, getShops, getCompanies,
   createProduct, updateProduct, deleteProduct, uploadProductImage, deleteProductImage,
   createCategory, createManufacturer, updateManufacturer, createShop, createCompany,
@@ -8,6 +10,14 @@ import {
 } from '../api';
 
 const AdminPanel = () => {
+  const navigate = useNavigate();
+  
+  // Auth state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [loginError, setLoginError] = useState('');
+  
+  // Main data states - MUST be before any conditional return
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -19,7 +29,7 @@ const AdminPanel = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   
-  // Modal states
+  // Product modal states
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [productForm, setProductForm] = useState({
@@ -28,37 +38,96 @@ const AdminPanel = () => {
   });
   const [selectedImage, setSelectedImage] = useState(null);
 
-  // Category modal
+  // Category modal states
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [categoryForm, setCategoryForm] = useState({ name: '', description: '' });
 
-  // Manufacturer modal
+  // Manufacturer modal states
   const [showManufacturerModal, setShowManufacturerModal] = useState(false);
   const [editingManufacturer, setEditingManufacturer] = useState(null);
   const [manufacturerForm, setManufacturerForm] = useState({
     name: '', contact_person: '', phone_number: '', email: '', location: ''
   });
 
-  // Shop modal
+  // Shop modal states
   const [showShopModal, setShowShopModal] = useState(false);
   const [editingShop, setEditingShop] = useState(null);
   const [shopForm, setShopForm] = useState({ company_id: '', address: '' });
 
-  // Company modal
+  // Company modal states
   const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [companyForm, setCompanyForm] = useState({ company_name: '' });
 
-  // Worker modal
+  // Worker modal states
   const [showWorkerModal, setShowWorkerModal] = useState(false);
   const [editingWorker, setEditingWorker] = useState(null);
   const [workerForm, setWorkerForm] = useState({
     full_name: '', email: '', phone_number: '', post_id: ''
   });
 
-  // Post modal
+  // Post modal states
   const [showPostModal, setShowPostModal] = useState(false);
   const [postForm, setPostForm] = useState({ name: '', salary: '' });
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await login(loginForm.username, loginForm.password);
+      localStorage.setItem('adminToken', response.access_token);
+      setAuthToken(response.access_token);
+      setIsAuthenticated(true);
+      setLoginError('');
+    } catch (error) {
+      setLoginError('Неверный логин или пароль');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    setAuthToken(null);
+    setIsAuthenticated(false);
+    navigate('/');
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="login-container" style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
+        <h2>Вход для администраторов</h2>
+        <form onSubmit={handleLogin}>
+          <div style={{ marginBottom: '15px' }}>
+            <label>Логин:</label>
+            <input
+              type="text"
+              value={loginForm.username}
+              onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+              required
+            />
+          </div>
+          <div style={{ marginBottom: '15px' }}>
+            <label>Пароль:</label>
+            <input
+              type="password"
+              value={loginForm.password}
+              onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+              style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+              required
+            />
+          </div>
+          {loginError && <p style={{ color: 'red' }}>{loginError}</p>}
+          <button type="submit" className="btn-primary">Войти</button>
+        </form>
+      </div>
+    );
+  }
 
   useEffect(() => {
     loadData();
@@ -360,7 +429,12 @@ const AdminPanel = () => {
 
   return (
     <div className="container">
-      <h1>Admin Panel</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>Admin Panel</h1>
+        <button onClick={handleLogout} className="btn-secondary" style={{ marginLeft: 'auto' }}>
+          Выйти
+        </button>
+      </div>
       
       <div className="filters" style={{marginTop: '20px'}}>
         <button 
