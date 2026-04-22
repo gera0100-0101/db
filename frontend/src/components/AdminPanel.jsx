@@ -14,9 +14,64 @@ import {
 
 const AdminPanel = () => {
   const navigate = useNavigate();
+  
+  // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [loginError, setLoginError] = useState('');
+  
+  // Main data states - MUST be before any conditional return
+  const [activeTab, setActiveTab] = useState('products');
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [manufacturers, setManufacturers] = useState([]);
+  const [shops, setShops] = useState([]);
+  const [companies, setCompanies] = useState([]);
+  const [workers, setWorkers] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  // Product modal states
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [productForm, setProductForm] = useState({
+    name: '', price: '', weight: '', calories: '', structure: '', stock_amount: 0,
+    shop_id: '', category_id: '', manufacturer_id: ''
+  });
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  // Category modal states
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [categoryForm, setCategoryForm] = useState({ name: '', description: '' });
+
+  // Manufacturer modal states
+  const [showManufacturerModal, setShowManufacturerModal] = useState(false);
+  const [editingManufacturer, setEditingManufacturer] = useState(null);
+  const [manufacturerForm, setManufacturerForm] = useState({
+    name: '', contact_person: '', phone_number: '', email: '', location: ''
+  });
+
+  // Shop modal states
+  const [showShopModal, setShowShopModal] = useState(false);
+  const [editingShop, setEditingShop] = useState(null);
+  const [shopForm, setShopForm] = useState({ company_id: '', address: '' });
+
+  // Company modal states
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const [companyForm, setCompanyForm] = useState({ company_name: '' });
+
+  // Worker modal states
+  const [showWorkerModal, setShowWorkerModal] = useState(false);
+  const [editingWorker, setEditingWorker] = useState(null);
+  const [workerForm, setWorkerForm] = useState({
+    full_name: '', email: '', phone_number: '', post_id: ''
+  });
+
+  // Post modal states
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [postForm, setPostForm] = useState({ name: '', salary: '' });
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
@@ -76,57 +131,6 @@ const AdminPanel = () => {
       </div>
     );
   }
-  const [activeTab, setActiveTab] = useState('products');
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [manufacturers, setManufacturers] = useState([]);
-  const [shops, setShops] = useState([]);
-  const [companies, setCompanies] = useState([]);
-  const [workers, setWorkers] = useState([]);
-  const [posts, setPosts] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
-  
-  // Modal states
-  const [showProductModal, setShowProductModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [productForm, setProductForm] = useState({
-    name: '', price: '', weight: '', calories: '', structure: '', stock_amount: 0,
-    shop_id: '', category_id: '', manufacturer_id: ''
-  });
-  const [selectedImage, setSelectedImage] = useState(null);
-
-  // Category modal
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [categoryForm, setCategoryForm] = useState({ name: '', description: '' });
-
-  // Manufacturer modal
-  const [showManufacturerModal, setShowManufacturerModal] = useState(false);
-  const [editingManufacturer, setEditingManufacturer] = useState(null);
-  const [manufacturerForm, setManufacturerForm] = useState({
-    name: '', contact_person: '', phone_number: '', email: '', location: ''
-  });
-
-  // Shop modal
-  const [showShopModal, setShowShopModal] = useState(false);
-  const [editingShop, setEditingShop] = useState(null);
-  const [shopForm, setShopForm] = useState({ company_id: '', address: '' });
-
-  // Company modal
-  const [showCompanyModal, setShowCompanyModal] = useState(false);
-  const [companyForm, setCompanyForm] = useState({ company_name: '' });
-
-  // Worker modal
-  const [showWorkerModal, setShowWorkerModal] = useState(false);
-  const [editingWorker, setEditingWorker] = useState(null);
-  const [workerForm, setWorkerForm] = useState({
-    full_name: '', email: '', phone_number: '', post_id: ''
-  });
-
-  // Post modal
-  const [showPostModal, setShowPostModal] = useState(false);
-  const [postForm, setPostForm] = useState({ name: '', salary: '' });
 
   useEffect(() => {
     loadData();
