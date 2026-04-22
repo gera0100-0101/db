@@ -4,12 +4,9 @@ import {
   login, setAuthToken,
   getProducts, getCategories, getManufacturers, getShops, getCompanies,
   createProduct, updateProduct, deleteProduct, uploadProductImage, deleteProductImage,
-  createCategory, updateCategory, deleteCategory,
-  createManufacturer, updateManufacturer, deleteManufacturer,
-  createShop, updateShop, deleteShop,
-  createCompany,
-  getWorkers, createWorker, updateWorker, deleteWorker, getPosts, createPost,
-  getAdminOrders, updateOrder, deleteOrder
+  createCategory, createManufacturer, updateManufacturer, createShop, createCompany,
+  getWorkers, createWorker, updateWorker, getPosts, createPost,
+  getAdminOrders, updateOrder
 } from '../api';
 
 const AdminPanel = () => {
@@ -222,42 +219,15 @@ const AdminPanel = () => {
     }
   };
 
-  const handleDeleteOrder = async (id) => {
-    if (confirm('Are you sure you want to delete this order?')) {
-      try {
-        await deleteOrder(id);
-        loadData();
-      } catch (error) {
-        alert('Error deleting order: ' + error.message);
-      }
-    }
-  };
-
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingCategory) {
-        await updateCategory(editingCategory.id, categoryForm);
-      } else {
-        await createCategory(categoryForm);
-      }
+      await createCategory(categoryForm);
       setShowCategoryModal(false);
-      setEditingCategory(null);
       setCategoryForm({ name: '', description: '' });
       loadData();
     } catch (error) {
       alert('Error saving category: ' + error.message);
-    }
-  };
-
-  const handleDeleteCategory = async (id) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      try {
-        await deleteCategory(id);
-        loadData();
-      } catch (error) {
-        alert('Error deleting category: ' + error.message);
-      }
     }
   };
 
@@ -277,43 +247,16 @@ const AdminPanel = () => {
     }
   };
 
-  const handleDeleteManufacturer = async (id) => {
-    if (confirm('Are you sure you want to delete this manufacturer?')) {
-      try {
-        await deleteManufacturer(id);
-        loadData();
-      } catch (error) {
-        alert('Error deleting manufacturer: ' + error.message);
-      }
-    }
-  };
-
   const handleShopSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingShop) {
-        await updateShop(editingShop.id, { ...shopForm, company_id: parseInt(shopForm.company_id) });
-      } else {
-        const shopData = { ...shopForm, company_id: parseInt(shopForm.company_id) };
-        await createShop(shopData);
-      }
+      const shopData = { ...shopForm, company_id: parseInt(shopForm.company_id) };
+      await createShop(shopData);
       setShowShopModal(false);
-      setEditingShop(null);
       setShopForm({ company_id: '', address: '' });
       loadData();
     } catch (error) {
       alert('Error saving shop: ' + error.message);
-    }
-  };
-
-  const handleDeleteShop = async (id) => {
-    if (confirm('Are you sure you want to delete this shop?')) {
-      try {
-        await deleteShop(id);
-        loadData();
-      } catch (error) {
-        alert('Error deleting shop: ' + error.message);
-      }
     }
   };
 
@@ -336,28 +279,12 @@ const AdminPanel = () => {
         ...workerForm,
         post_id: workerForm.post_id ? parseInt(workerForm.post_id) : null
       };
-      if (editingWorker) {
-        await updateWorker(editingWorker.id, workerData);
-      } else {
-        await createWorker(workerData);
-      }
+      await createWorker(workerData);
       setShowWorkerModal(false);
-      setEditingWorker(null);
       setWorkerForm({ full_name: '', email: '', phone_number: '', post_id: '' });
       loadData();
     } catch (error) {
       alert('Error saving worker: ' + error.message);
-    }
-  };
-
-  const handleDeleteWorker = async (id) => {
-    if (confirm('Are you sure you want to delete this worker?')) {
-      try {
-        await deleteWorker(id);
-        loadData();
-      } catch (error) {
-        alert('Error deleting worker: ' + error.message);
-      }
     }
   };
 
@@ -469,7 +396,6 @@ const AdminPanel = () => {
             <th>Address</th>
             <th>Created At</th>
             <th>Assign Courier</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -493,15 +419,6 @@ const AdminPanel = () => {
                     <option key={worker.id} value={worker.id}>{worker.full_name}</option>
                   ))}
                 </select>
-              </td>
-              <td>
-                <button 
-                  className="btn btn-danger" 
-                  style={{padding: '4px 8px'}}
-                  onClick={() => handleDeleteOrder(order.id)}
-                >
-                  Delete
-                </button>
               </td>
             </tr>
           ))}
@@ -569,40 +486,15 @@ const AdminPanel = () => {
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
                 <h3 className="admin-section-title" style={{margin: 0}}>Categories</h3>
                 <button className="btn btn-primary" onClick={() => {
-                  setEditingCategory(null);
                   setCategoryForm({ name: '', description: '' });
                   setShowCategoryModal(true);
                 }}>Add Category</button>
               </div>
               <table className="data-table">
-                <thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Actions</th></tr></thead>
+                <thead><tr><th>ID</th><th>Name</th><th>Description</th></tr></thead>
                 <tbody>
                   {categories.map(cat => (
-                    <tr key={cat.id}>
-                      <td>{cat.id}</td>
-                      <td>{cat.name}</td>
-                      <td>{cat.description || '-'}</td>
-                      <td>
-                        <button 
-                          className="btn btn-secondary" 
-                          style={{marginRight: '5px', padding: '4px 8px'}}
-                          onClick={() => {
-                            setEditingCategory(cat);
-                            setCategoryForm({ name: cat.name, description: cat.description || '' });
-                            setShowCategoryModal(true);
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          className="btn btn-danger" 
-                          style={{padding: '4px 8px'}}
-                          onClick={() => handleDeleteCategory(cat.id)}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
+                    <tr key={cat.id}><td>{cat.id}</td><td>{cat.name}</td><td>{cat.description || '-'}</td></tr>
                   ))}
                 </tbody>
               </table>
@@ -619,7 +511,7 @@ const AdminPanel = () => {
                 }}>Add Manufacturer</button>
               </div>
               <table className="data-table">
-                <thead><tr><th>ID</th><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Location</th><th>Actions</th></tr></thead>
+                <thead><tr><th>ID</th><th>Name</th><th>Contact</th><th>Phone</th><th>Email</th><th>Location</th></tr></thead>
                 <tbody>
                   {manufacturers.map(m => (
                     <tr key={m.id}>
@@ -629,26 +521,6 @@ const AdminPanel = () => {
                       <td>{m.phone_number || '-'}</td>
                       <td>{m.email || '-'}</td>
                       <td>{m.location || '-'}</td>
-                      <td>
-                        <button 
-                          className="btn btn-secondary" 
-                          style={{marginRight: '5px', padding: '4px 8px'}}
-                          onClick={() => {
-                            setEditingManufacturer(m);
-                            setManufacturerForm({ name: m.name, contact_person: m.contact_person || '', phone_number: m.phone_number || '', email: m.email || '', location: m.location || '' });
-                            setShowManufacturerModal(true);
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          className="btn btn-danger" 
-                          style={{padding: '4px 8px'}}
-                          onClick={() => handleDeleteManufacturer(m.id)}
-                        >
-                          Delete
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -660,39 +532,18 @@ const AdminPanel = () => {
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
                 <h3 className="admin-section-title" style={{margin: 0}}>Shops</h3>
                 <button className="btn btn-primary" onClick={() => {
-                  setEditingShop(null);
                   setShopForm({ company_id: companies[0]?.id || '', address: '' });
                   setShowShopModal(true);
                 }}>Add Shop</button>
               </div>
               <table className="data-table">
-                <thead><tr><th>ID</th><th>Company</th><th>Address</th><th>Actions</th></tr></thead>
+                <thead><tr><th>ID</th><th>Company</th><th>Address</th></tr></thead>
                 <tbody>
                   {shops.map(shop => (
                     <tr key={shop.id}>
                       <td>{shop.id}</td>
                       <td>{shop.company?.company_name || 'N/A'}</td>
                       <td>{shop.address}</td>
-                      <td>
-                        <button 
-                          className="btn btn-secondary" 
-                          style={{marginRight: '5px', padding: '4px 8px'}}
-                          onClick={() => {
-                            setEditingShop(shop);
-                            setShopForm({ company_id: shop.company_id, address: shop.address });
-                            setShowShopModal(true);
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          className="btn btn-danger" 
-                          style={{padding: '4px 8px'}}
-                          onClick={() => handleDeleteShop(shop.id)}
-                        >
-                          Delete
-                        </button>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -704,42 +555,15 @@ const AdminPanel = () => {
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
                 <h3 className="admin-section-title" style={{margin: 0}}>Workers</h3>
                 <button className="btn btn-primary" onClick={() => {
-                  setEditingWorker(null);
                   setWorkerForm({ full_name: '', email: '', phone_number: '', post_id: '' });
                   setShowWorkerModal(true);
                 }}>Add Worker</button>
               </div>
               <table className="data-table">
-                <thead><tr><th>ID</th><th>Name</th><th>Position</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
+                <thead><tr><th>ID</th><th>Name</th><th>Position</th><th>Phone</th><th>Email</th></tr></thead>
                 <tbody>
                   {workers.map(w => (
-                    <tr key={w.id}>
-                      <td>{w.id}</td>
-                      <td>{w.full_name}</td>
-                      <td>{w.post?.name || '-'}</td>
-                      <td>{w.phone_number || '-'}</td>
-                      <td>{w.email || '-'}</td>
-                      <td>
-                        <button 
-                          className="btn btn-secondary" 
-                          style={{marginRight: '5px', padding: '4px 8px'}}
-                          onClick={() => {
-                            setEditingWorker(w);
-                            setWorkerForm({ full_name: w.full_name, email: w.email || '', phone_number: w.phone_number || '', post_id: w.post_id || '' });
-                            setShowWorkerModal(true);
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button 
-                          className="btn btn-danger" 
-                          style={{padding: '4px 8px'}}
-                          onClick={() => handleDeleteWorker(w.id)}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
+                    <tr key={w.id}><td>{w.id}</td><td>{w.full_name}</td><td>{w.post?.name || '-'}</td><td>{w.phone_number || '-'}</td><td>{w.email || '-'}</td></tr>
                   ))}
                 </tbody>
               </table>
@@ -865,7 +689,7 @@ const AdminPanel = () => {
       {showCategoryModal && (
         <div className="modal-overlay" onClick={() => setShowCategoryModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="modal-title">{editingCategory ? 'Edit Category' : 'Add Category'}</h3>
+            <h3 className="modal-title">Add Category</h3>
             <form onSubmit={handleCategorySubmit}>
               <div className="form-group">
                 <label className="form-label">Name *</label>
@@ -888,7 +712,7 @@ const AdminPanel = () => {
               </div>
               <div className="modal-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowCategoryModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">{editingCategory ? 'Update' : 'Create'}</button>
+                <button type="submit" className="btn btn-primary">Create</button>
               </div>
             </form>
           </div>
@@ -958,7 +782,7 @@ const AdminPanel = () => {
       {showShopModal && (
         <div className="modal-overlay" onClick={() => setShowShopModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="modal-title">{editingShop ? 'Edit Shop' : 'Add Shop'}</h3>
+            <h3 className="modal-title">Add Shop</h3>
             <form onSubmit={handleShopSubmit}>
               <div className="form-group">
                 <label className="form-label">Company *</label>
@@ -986,7 +810,7 @@ const AdminPanel = () => {
               </div>
               <div className="modal-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowShopModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">{editingShop ? 'Update' : 'Create'}</button>
+                <button type="submit" className="btn btn-primary">Create</button>
               </div>
             </form>
           </div>
@@ -1020,7 +844,7 @@ const AdminPanel = () => {
       {showWorkerModal && (
         <div className="modal-overlay" onClick={() => setShowWorkerModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 className="modal-title">{editingWorker ? 'Edit Worker' : 'Add Worker'}</h3>
+            <h3 className="modal-title">Add Worker</h3>
             <form onSubmit={handleWorkerSubmit}>
               <div className="form-group">
                 <label className="form-label">Full Name *</label>
@@ -1065,7 +889,7 @@ const AdminPanel = () => {
               </div>
               <div className="modal-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowWorkerModal(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">{editingWorker ? 'Update' : 'Create'}</button>
+                <button type="submit" className="btn btn-primary">Create</button>
               </div>
             </form>
           </div>

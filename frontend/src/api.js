@@ -84,15 +84,6 @@ export const createCategory = async (categoryData) => {
   return response.data;
 };
 
-export const updateCategory = async (id, categoryData) => {
-  const response = await api.put(`/categories/${id}`, categoryData);
-  return response.data;
-};
-
-export const deleteCategory = async (id) => {
-  await api.delete(`/categories/${id}`);
-};
-
 // Manufacturers
 export const getManufacturers = async () => {
   const response = await api.get('/manufacturers/');
@@ -109,10 +100,6 @@ export const updateManufacturer = async (id, manufacturerData) => {
   return response.data;
 };
 
-export const deleteManufacturer = async (id) => {
-  await api.delete(`/manufacturers/${id}`);
-};
-
 // Shops
 export const getShops = async () => {
   const response = await api.get('/shops/');
@@ -122,15 +109,6 @@ export const getShops = async () => {
 export const createShop = async (shopData) => {
   const response = await api.post('/shops/', shopData);
   return response.data;
-};
-
-export const updateShop = async (id, shopData) => {
-  const response = await api.put(`/shops/${id}`, shopData);
-  return response.data;
-};
-
-export const deleteShop = async (id) => {
-  await api.delete(`/shops/${id}`);
 };
 
 // Companies
@@ -158,10 +136,6 @@ export const createWorker = async (workerData) => {
 export const updateWorker = async (id, workerData) => {
   const response = await api.put(`/workers/${id}`, workerData);
   return response.data;
-};
-
-export const deleteWorker = async (id) => {
-  await api.delete(`/workers/${id}`);
 };
 
 // Posts
@@ -196,10 +170,6 @@ export const getOrder = async (id) => {
 export const updateOrder = async (id, orderData) => {
   const response = await api.put(`/orders/${id}`, orderData);
   return response.data;
-};
-
-export const deleteOrder = async (id) => {
-  await api.delete(`/orders/${id}`);
 };
 
 export const getAdminOrders = async () => {

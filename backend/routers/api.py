@@ -14,8 +14,8 @@ from models import (
 )
 from schemas.schemas import (
     CompanyCreate, CompanyResponse,
-    ShopCreate, ShopUpdate, ShopResponse,
-    CategoryCreate, CategoryUpdate, CategoryResponse,
+    ShopCreate, ShopResponse,
+    CategoryCreate, CategoryResponse,
     ManufacturerCreate, ManufacturerUpdate, ManufacturerResponse,
     ProductCreate, ProductUpdate, ProductResponse,
     WorkerCreate, WorkerUpdate, WorkerResponse,
@@ -118,29 +118,6 @@ def create_shop(shop: ShopCreate, db: Session = Depends(get_db)):
 def get_shops(db: Session = Depends(get_db)):
     return db.query(Shop).all()
 
-@router.put("/shops/{shop_id}", response_model=ShopResponse)
-def update_shop(shop_id: int, shop: ShopUpdate, db: Session = Depends(get_db)):
-    db_shop = db.query(Shop).filter(Shop.id == shop_id).first()
-    if not db_shop:
-        raise HTTPException(status_code=404, detail="Shop not found")
-    
-    update_data = shop.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(db_shop, field, value)
-    
-    db.commit()
-    db.refresh(db_shop)
-    return db_shop
-
-@router.delete("/shops/{shop_id}")
-def delete_shop(shop_id: int, db: Session = Depends(get_db)):
-    db_shop = db.query(Shop).filter(Shop.id == shop_id).first()
-    if not db_shop:
-        raise HTTPException(status_code=404, detail="Shop not found")
-    db.delete(db_shop)
-    db.commit()
-    return {"message": "Shop deleted"}
-
 # Category endpoints
 @router.post("/categories/", response_model=CategoryResponse)
 def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
@@ -153,29 +130,6 @@ def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
 @router.get("/categories/", response_model=List[CategoryResponse])
 def get_categories(db: Session = Depends(get_db)):
     return db.query(Category).all()
-
-@router.put("/categories/{category_id}", response_model=CategoryResponse)
-def update_category(category_id: int, category: CategoryUpdate, db: Session = Depends(get_db)):
-    db_category = db.query(Category).filter(Category.id == category_id).first()
-    if not db_category:
-        raise HTTPException(status_code=404, detail="Category not found")
-    
-    update_data = category.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(db_category, field, value)
-    
-    db.commit()
-    db.refresh(db_category)
-    return db_category
-
-@router.delete("/categories/{category_id}")
-def delete_category(category_id: int, db: Session = Depends(get_db)):
-    db_category = db.query(Category).filter(Category.id == category_id).first()
-    if not db_category:
-        raise HTTPException(status_code=404, detail="Category not found")
-    db.delete(db_category)
-    db.commit()
-    return {"message": "Category deleted"}
 
 # Manufacturer endpoints
 @router.post("/manufacturers/", response_model=ManufacturerResponse)
@@ -203,15 +157,6 @@ def update_manufacturer(manufacturer_id: int, manufacturer: ManufacturerUpdate, 
     db.commit()
     db.refresh(db_manufacturer)
     return db_manufacturer
-
-@router.delete("/manufacturers/{manufacturer_id}")
-def delete_manufacturer(manufacturer_id: int, db: Session = Depends(get_db)):
-    db_manufacturer = db.query(Manufacturer).filter(Manufacturer.id == manufacturer_id).first()
-    if not db_manufacturer:
-        raise HTTPException(status_code=404, detail="Manufacturer not found")
-    db.delete(db_manufacturer)
-    db.commit()
-    return {"message": "Manufacturer deleted"}
 
 # Product endpoints with image upload
 @router.post("/products/", response_model=ProductResponse)
@@ -356,15 +301,6 @@ def update_worker(worker_id: int, worker: WorkerUpdate, db: Session = Depends(ge
     db.refresh(db_worker)
     return db_worker
 
-@router.delete("/workers/{worker_id}")
-def delete_worker(worker_id: int, db: Session = Depends(get_db)):
-    db_worker = db.query(Worker).filter(Worker.id == worker_id).first()
-    if not db_worker:
-        raise HTTPException(status_code=404, detail="Worker not found")
-    db.delete(db_worker)
-    db.commit()
-    return {"message": "Worker deleted"}
-
 # Order endpoints
 @router.post("/orders/checkout/", response_model=OrderResponse)
 def checkout_order(checkout: CartCheckout, db: Session = Depends(get_db)):
@@ -462,15 +398,6 @@ def update_order(order_id: int, order_update: OrderUpdate, db: Session = Depends
     db.commit()
     db.refresh(db_order)
     return db_order
-
-@router.delete("/orders/{order_id}")
-def delete_order(order_id: int, db: Session = Depends(get_db)):
-    db_order = db.query(Order).filter(Order.id == order_id).first()
-    if not db_order:
-        raise HTTPException(status_code=404, detail="Order not found")
-    db.delete(db_order)
-    db.commit()
-    return {"message": "Order deleted"}
 
 @router.get("/admin/orders/", response_model=List[OrderResponse])
 def get_all_orders_with_details(db: Session = Depends(get_db)):
