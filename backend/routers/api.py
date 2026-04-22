@@ -35,7 +35,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Hardcoded admin credentials
 ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD_HASH = pwd_context.hash("12345")
+ADMIN_PASSWORD = "12345"
 
 class Token(BaseModel):
     access_token: str
@@ -45,13 +45,14 @@ class LoginRequest(BaseModel):
     username: str
     password: str
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password, expected_password):
+    # Simple direct comparison for admin credentials
+    return plain_password == expected_password
 
 def authenticate_user(username: str, password: str):
     if username != ADMIN_USERNAME:
         return False
-    if not verify_password(password, ADMIN_PASSWORD_HASH):
+    if not verify_password(password, ADMIN_PASSWORD):
         return False
     return {"username": username}
 
